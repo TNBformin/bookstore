@@ -100,6 +100,10 @@ namespace bookstore.Pages
             mainWindow.LastPrice.Visibility = Visibility.Visible;
             mainWindow.DiscountAmount.Visibility = Visibility.Visible;
             mainWindow.DeliveryDate.Visibility = Visibility.Visible;
+            mainWindow.PickUpPointsPanel.Visibility = Visibility.Visible;
+
+            var PickUpPointsData = App.Context.PickUpPoints.ToList();
+            mainWindow.PickUpPoints.ItemsSource = PickUpPointsData.Select(p => p.PickUpPointName);
         }
 
 
@@ -225,30 +229,79 @@ namespace bookstore.Pages
                 // Получение указанного кол-ва необходимых книг
                 int QuanBook = int.Parse(currentTextBox.Text.ToString());
 
-                // Восстановление кол-ва книг в БД
-                book.BookQuantityInStock += OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder;
-
-                // Проверка на хватку книг на складе
-                if (book.BookQuantityInStock < QuanBook)
+                // Проверка кол-ва
+                if (QuanBook == 0)
                 {
-                    // Восстановление прошлого прошедшего условие числа
-                    currentTextBox.Text = OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder.ToString();
+                    // Удаление товара из корзины
+                    // Получение заказа книги
+                    var OrderBook = OrderBooksList.FirstOrDefault(s => s.BookId == book.BookId);
+                    // Подтвержение действия пользователем
+                    MessageBoxResult answer = MessageBox.Show("Вы уверены что хотите удалить этот товар из корзины?", "Подтверждение", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    if (answer == MessageBoxResult.OK)
+                    {
+                        // Возвращение кол-ва на склад
+                        book.BookQuantityInStock += OrderBook.BookQuantityInOrder;
 
-                    // Вычитание кол-ва книг из БД
-                    book.BookQuantityInStock -= OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder;
+                        // Удаление записи из БД
+                        App.Context.OrderBooks.Remove(OrderBook);
 
-                    // Диалоговое окно с предупрежднением об ошибке
-                    MessageBox.Show( "Недостаточно товара на складе", "Error", MessageBoxButton.OK, MessageBoxImage.Warning); 
+                        // Сохранение изменений
+                        App.Context.SaveChanges();
+
+                        // Определение оставшихся книг в заказе
+                        var OrderBooks = App.Context.OrderBooks.Where(s => s.OrderId == OrderID).ToList();
+
+                        // Проверка на их наличие
+                        if (OrderBooks.Count != 0)
+                        {
+                            // Обновление страницы
+                            mainWindow.MainFrame.Navigate(new CartPage());
+                        }
+                        else
+                        {
+                            // Закрытие страницы корзины, ведь она пуста
+                            mainWindow.Cart.Visibility = Visibility.Hidden;
+                            mainWindow.Back(this, null);
+                        }
+                    }
+                    else
+                    {
+                        // Установка числа по умолчанию и сохранение изменений в БД
+                        book.BookQuantityInStock += OrderBook.BookQuantityInOrder - 1;
+                        currentTextBox.Text = "1";
+                        OrderBook.BookQuantityInOrder = 1;
+                        App.Context.SaveChanges();
+                    }
                 }
                 else
                 {
-                    // Вычитание кол-ва книг из БД
-                    book.BookQuantityInStock -= QuanBook;
+                    // Восстановление кол-ва книг в БД
+                    book.BookQuantityInStock += OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder;
 
-                    // Запись в кол-ва в заказ
-                    OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder = QuanBook;
-                    
+                    // Проверка на хватку книг на складе
+                    if (book.BookQuantityInStock < QuanBook)
+                    {
+                        // Восстановление прошлого прошедшего условие числа
+                        currentTextBox.Text = OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder.ToString();
+
+                        // Вычитание кол-ва книг из БД
+                        book.BookQuantityInStock -= OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder;
+
+                        // Диалоговое окно с предупрежднением об ошибке
+                        MessageBox.Show("Недостаточно товара на складе", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        // Вычитание кол-ва книг из БД
+                        book.BookQuantityInStock -= QuanBook;
+
+                        // Запись в кол-ва в заказ
+                        OrderBooksList.FirstOrDefault(s => s.BookId == currentTextBoxTag).BookQuantityInOrder = QuanBook;
+
+                    }
                 }
+
+                
             }
             // Проверка на то что в поле есть символы
             else if (!currentTextBox.Text.ToString().All(char.IsDigit))

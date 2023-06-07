@@ -47,6 +47,7 @@ namespace bookstore
             LastPrice.Visibility = Visibility.Hidden;
             DiscountAmount.Visibility = Visibility.Hidden;
             DeliveryDate.Visibility = Visibility.Hidden;
+            PickUpPointsPanel.Visibility = Visibility.Hidden;
         }
 
     }
