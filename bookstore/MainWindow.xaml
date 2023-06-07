@@ -1,0 +1,40 @@
+﻿<Window x:Class="bookstore.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:bookstore"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.2*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="0.15*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="#FFEAB76C">
+            <TextBlock Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="35" FontFamily="Blackadder ITC">Book store</TextBlock>
+            <Button Width="80px"  Height="25px" HorizontalAlignment="Right" Margin="0 0 15 0" Click="CartPage" Visibility="Hidden"  x:Name="Cart">Корзина</Button>
+            <Button Width="80px"  Height="25px" HorizontalAlignment="Left" Margin="15 0 0 0" Click="Back" Visibility="Hidden"  x:Name="BackBtn">Назад</Button>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Frame NavigationUIVisibility="Hidden"  Name="MainFrame"></Frame>
+        </Grid>
+        <Grid Grid.Row="2" Background="#FFEAB76C">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Name="DeliveryDate"></TextBlock>
+            <StackPanel Grid.Column="2" Orientation="Vertical">
+                <TextBlock x:Name="FullPrice" Grid.Column="2" Text="{Binding FullPriceWithoutDiscount}"></TextBlock>
+                <TextBlock x:Name="DiscountAmount" Grid.Column="2" Text="{Binding FullDiscount}"></TextBlock>
+                <TextBlock x:Name="LastPrice" Grid.Column="2" Text="{Binding PriceWithDiscount}"></TextBlock>
+            </StackPanel>
+            <Button Grid.Column="3" Visibility="Hidden" x:Name="OrderCreate" Height="35px" Width="180px">Офромить заказ</Button>
+        </Grid>
+        
+    </Grid>
+</Window>
